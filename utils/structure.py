@@ -24,7 +24,6 @@ class Structure():
     Functions:
     - display:
         Display the current situation of the sudoku.
-        
         Output:
         - display_result(str)
     '''
@@ -82,15 +81,16 @@ class Structure():
         if self.flg_regular: return int(idx / (self.meta_size**3)) * self.meta_size + int((idx % (self.meta_size**2)) / self.meta_size)
         return int(sum(self.box_idx_list, []).index(idx) / self.meta_size**2)
     
-    def display(self):
+    def display(self, data=None):
         '''Display the current situation of the sudoku.
         
         Output:
         - display_result(str): A string of display result
         '''
+        
         display = ''
-        display_data = list('.' * (self.meta_size ** 4)) if not (self.flg_regular and self.meta_size < 4) else self.data
-        for idx,char in enumerate(display_data):
+        template_data = list('.' * (self.meta_size ** 4)) if not (self.flg_regular and self.meta_size < 4) else self.data
+        for idx,char in enumerate(template_data):
             if idx % (self.meta_size**4) == 0:
                 display += ('+' + '-' * (self.meta_size * 2 - 1)) * self.meta_size + "+\n|" + char
             elif idx % (self.meta_size**3) == 0:
@@ -103,19 +103,20 @@ class Structure():
                 display += ' ' + char
             idx += 1
         display = display + "|\n" + ('+' + '-' * (self.meta_size * 2 - 1)) * self.meta_size + "+\n"
-        if self.flg_regular and self.meta_size < 4:
+        if self.flg_regular and self.meta_size < 4 and data is None:
             return display
         # Formatted display
         template = list(display)
         valid_idxes = []
-        min_font_size = max([len(char) for char in self.data])
+        data = data if data else self.data
+        min_font_size = max([len(char) for char in data])
         for idx, i in enumerate(template):
             if i in self.element_set or i == '.':
                 valid_idxes.append(idx)
             if idx not in valid_idxes and template[idx] != '\n':
                 template[idx] = ' '
         for idx, i in enumerate(valid_idxes):
-            template[i] = self.data[idx] if len(self.data[idx]) == min_font_size else self.data[idx] + ' ' * (min_font_size - len(self.data[idx]))
+            template[i] = data[idx] if len(data[idx]) == min_font_size else data[idx] + ' ' * (min_font_size - len(data[idx]))
         # print(''.join(template))
         
         # Determine the margins (' ' / '|' / '-')
