@@ -27,12 +27,14 @@ class Solver():
         self.steps = []
         self.ready = [] # the [{idx : update_num} ..] of what is ready to update
     
-    def check_idx_only(self, idx, data=None):
+    def check_idx_only(self, idx, data=None, candidate=None):
         '''Check if the item with the index idx is the only blank of its row / column / box.
 
         Input:
         - idx: the index where we check
         - data: the external data we put in.
+        - candidate: if None(default), then the element to be updated will be fixed with the only one left from the element_set
+                            else, then the candidate will be the new value.
 
         Ouput:
         - flg_changed(Boolean): True if it is ready to update
@@ -45,8 +47,16 @@ class Solver():
         # Check if the index is in ready list
         if idx in [i[0] for i in self.ready]: return False
 
-        def check_idx_only_in_line(line, idx_in_line, element_set):
-            return element_set - set(line) if (line[idx_in_line] == '.' and line.count('.') == 1) else None
+        def check_idx_only_in_line(line, idx_in_line, element_set, candidate=candidate):
+            '''check if the element with the index idx_in_line is the only one in line
+            
+            Input:
+            - line
+            - id_in_line
+            - element_set
+            '''
+            candidate = candidate if candidate else list(element_set - set(line))[0]
+            return candidate if (line[idx_in_line] == '.' and line.count('.') == 1) else None
         
         # Check row
         row_line = data[int(idx / (self.meta_size**2)) * self.meta_size**2:int(idx / (self.meta_size**2) + 1) * self.meta_size**2]
@@ -54,7 +64,7 @@ class Solver():
         re_row = check_idx_only_in_line(row_line, idx_in_row_line, self.structure.element_set)
         # print(row_line, idx_in_row_line, re_row)
         if re_row:
-            self.ready.append((idx, list(re_row)[0]))
+            self.ready.append((idx, re_row))
             return True
     
         # Check column
@@ -63,7 +73,7 @@ class Solver():
         re_col = check_idx_only_in_line(col_line, idx_in_col_line, self.structure.element_set)
         # print(col_line, idx_in_col_line, re_col)
         if re_col:
-            self.ready.append((idx, list(re_col)[0]))
+            self.ready.append((idx, re_col))
             return True
             
         # Check box
@@ -72,7 +82,7 @@ class Solver():
         re_box = check_idx_only_in_line(box_line, idx_in_box_line, self.structure.element_set)
         # print(box_line, idx_in_box_line, re_box)
         if re_box:
-            self.ready.append((idx, list(re_box)[0]))
+            self.ready.append((idx, re_box))
             return True
         
         return False
@@ -95,11 +105,9 @@ class Solver():
         for idx in list(set(self.idxes_need_to_solve) - set(idxes_need_to_solve)):
             tmp_scanned_data[idx] = ''
         print(self.structure.display(tmp_scanned_data))
-#         print(idxes_need_to_solve)
+        # print(idxes_need_to_solve)
         flg_change = False
         for idx in idxes_need_to_solve:
-            if self.check_idx_only(idx, tmp_scanned_data): flg_change = True
+            if self.check_idx_only(idx, tmp_scanned_data, candidate=element): flg_change = True
         return flg_change
-
-    
             
