@@ -56,14 +56,14 @@ class Solver():
             - element_set
             '''
             candidate = candidate if candidate else list(element_set - set(line))[0]
-            return candidate if (line[idx_in_line] == '.' and line.count('.') == 1) else None
+            return candidate if (line[idx_in_line] == '.' and line.count('.') == 1) else element_set - set(line)
         
         # Check row
         row_line = data[int(idx / (self.meta_size**2)) * self.meta_size**2:int(idx / (self.meta_size**2) + 1) * self.meta_size**2]
         idx_in_row_line = idx % (self.meta_size**2)
         re_row = check_idx_only_in_line(row_line, idx_in_row_line, self.structure.element_set)
         # print(row_line, idx_in_row_line, re_row)
-        if re_row:
+        if type(re_row) != set:
             self.ready.append((idx, re_row))
             return True
     
@@ -72,7 +72,7 @@ class Solver():
         idx_in_col_line = int(idx / (self.meta_size**2))
         re_col = check_idx_only_in_line(col_line, idx_in_col_line, self.structure.element_set)
         # print(col_line, idx_in_col_line, re_col)
-        if re_col:
+        if type(re_col) != set:
             self.ready.append((idx, re_col))
             return True
             
@@ -81,8 +81,13 @@ class Solver():
         idx_in_box_line = self.structure.box_idx_list[self.structure.get_boxid_by_idx(idx)].index(idx)
         re_box = check_idx_only_in_line(box_line, idx_in_box_line, self.structure.element_set)
         # print(box_line, idx_in_box_line, re_box)
-        if re_box:
+        if type(re_box) != set:
             self.ready.append((idx, re_box))
+            return True
+        
+        re = list(re_col & re_row & re_box)
+        if len(re) == 1:
+            self.ready.append((idx, re[0]))
             return True
         
         return False
@@ -111,3 +116,4 @@ class Solver():
             if self.check_idx_only(idx, tmp_scanned_data, candidate=element): flg_change = True
         return flg_change
             
+    
