@@ -49,8 +49,8 @@ class Structure():
         - element_set(set):
             e.g. None(default): if meta_size == 3, then {'1', '2', '3', '4', '5', '6', '7', '8', '9'}
 
-        # TODO:recognize the elements and collect them into a set.
-        # TODO: restrict the input data: No '.' or '?'.
+        # TODO: UNSOLVED, recognize the elements and collect them into a set.
+        # TODO: UNSOLVED, restrict the input data: No '.' or '?'.
         '''
         self.data = data.replace(' ', '').strip('\n').split(',')
         self.meta_size = meta_size if meta_size else int(len(self.data)**(1/4))

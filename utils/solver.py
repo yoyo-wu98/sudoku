@@ -17,7 +17,7 @@ class BasicSolver():
     - ready: the step-by-step solutions which is ready to update [(idx, update_num), ...]
     - tmp_scanned_data
     - tmp_scanned_element
-    # TODO: predict part
+    # TODO: UNSOLVED, predict part
     '''
     def __init__(self, problem_structure):
         assert problem_structure.__class__ == Structure, 'Parameter error: The problem_structure\'s class is not Structure.'
@@ -46,7 +46,7 @@ class BasicSolver():
         Ouput:
         - flg_changed(Boolean): True if it is ready to update
         
-        # TODO: element_set auto recognition.
+        # TODO: UNSOLVED, element_set auto recognition.
         # TODO: SOLVED, add a parameter to determine whether to use the last_left_check
         '''
         data = data if data else list(self.data)
@@ -119,6 +119,8 @@ class BasicSolver():
 
         Output:
         - flg_change
+
+        # TODO: SOLVED, add a parameter to determine whether to save the scanned progress and element
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
@@ -162,7 +164,7 @@ class BasicSolver():
         - flg_change
         '''
         if self.check_scanned_drop(element, out_scanned_data=True): 
-            return True# FIXME: first update the data and then do the rest part.
+            return True# FIXME: UNSOLVED, first update the data and then do the rest part.
         else:
             assert self.tmp_scanned_element == element, 'Scanned Error: tmp_scanned_element not the same one:' + self.tmp_scanned_element + ' != ' + element
             tmp_scanned_data = list(self.tmp_scanned_data)
@@ -222,4 +224,14 @@ class BasicSolver():
         
         return self.check_scanned_drop(element, data=tmp_scanned_data)
 
+    # TODO: UNSOLVED, Grouped dropped part.
+    def check_grouped_dropped(self, element):
+        '''Check whether the element can be scanned in grouped form and dropped
+
+        Input:
+        - element
+
+        Output:
+        - flg_change
+        '''
         

@@ -3,8 +3,8 @@
 
 from .structure import *
 
-# TODO: history save and retrace - use solver's data and data_origin
-# TODO: predict point's possible number and add checkpoint
+# TODO: UNSOLVED, history save and retrace - use solver's data and data_origin
+# TODO: UNSOLVED, predict point's possible number and add checkpoint
 class Predictor():
     point = None
     point_index = 0
