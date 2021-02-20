@@ -39,7 +39,7 @@ class Structure():
             And '.' represents blank.
             e.g. ".,.,.,.,.,.,.,.,.,.,.,6,.,9,3,.,.,.,9,.,.,7,6,.,.,.,4,4,.,.,.,.,6,.,3,.,.,.,.,8,.,.,.,.,2,.,1,.,.,.,.,8,5,.,7,.,.,6,5,.,.,4,.,.,8,4,.,.,.,9,.,.,.,.,3,2,.,.,.,.,."
         - meta_size(int):
-            e.g. 3(default): 9x9; 4: 16x16; 5: 25x25
+            e.g. 3(default)for 9x9; 4 for 16x16; 5 for 25x25
         - box_idx_list(list(list)):
             e.g. None(default): if meta_size == 2, then [[0, 4, 1, 5], [2, 6, 3, 7], [8, 12, 9, 13], [10, 14, 11, 15]];
                                 if meta_size == 3, then [[0,1,2,9,10,11,18,19,20], [3,4,5,12,13,14,21,22,23], [6,7,8,15,16,17,24,25,26], \
@@ -50,6 +50,7 @@ class Structure():
             e.g. None(default): if meta_size == 3, then {'1', '2', '3', '4', '5', '6', '7', '8', '9'}
 
         # TODO:recognize the elements and collect them into a set.
+        # TODO: restrict the input data: No '.' or '?'.
         '''
         self.data = data.replace(' ', '').strip('\n').split(',')
         self.meta_size = meta_size if meta_size else int(len(self.data)**(1/4))
@@ -62,12 +63,21 @@ class Structure():
             else set([str(i + 1) for i in range(self.meta_size**2)])
         self.flg_regular = True if (not box_idx_list and not element_set) else False
 
-        assert len(self.data) == self.meta_size**4, \
-            'Length error: The input data\'s length ' + str(len(self.data)) + ' does not equal to ' +  str(self.meta_size**4) + '.'
-        assert (set(self.data) - {'.'}).issubset(self.element_set), \
-            'The input data has some invalid element' + str((set(self.data) - {'.'} - self.element_set))
-        assert set(sum(self.box_idx_list, [])) == set(range(self.meta_size**4)), \
-            'The input box_idx_list ' + str(self.box_idx_list) + ' cannot be combined into the range(' + str(self.meta_size**4) + ').'
+        self.check_data_and_boxes()
+
+    def check_data_and_boxes(self, data=None, processed=False, box_idx_list=None):
+        '''Check the correctness of data(default:None, for self.data) and box_idx_list(default:None, for self.box_idx_list).
+        If processed(default:False), we ignore '' in data.
+        '''
+        data = data if data else self.data
+        box_idx_list = box_idx_list if box_idx_list else self.box_idx_list
+        assert len(data) == self.meta_size**4, \
+            'Length error: The input data\'s length ' + str(len(data)) + ' does not equal to ' +  str(self.meta_size**4) + '.'
+        set_data = set(data) - {'.'} if not processed else set(data) - {'.'} - {''}
+        assert set_data.issubset(self.element_set), \
+            'The input data has some invalid element' + str((set_data - self.element_set))
+        assert set(sum(box_idx_list, [])) == set(range(self.meta_size**4)), \
+            'The input box_idx_list ' + str(box_idx_list) + ' cannot be combined into the range(' + str(self.meta_size**4) + ').'
 
     def get_boxid_by_idx(self, idx):
         '''Use the element idx to find the box where it belongs.
