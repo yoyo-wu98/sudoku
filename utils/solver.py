@@ -164,6 +164,7 @@ class BasicSolver():
         - flg_change
         '''
         if self.check_scanned_drop(element, out_scanned_data=True): 
+            print('No need to area drop, scanned drop is enough.')
             return True# FIXME: UNSOLVED, first update the data and then do the rest part.
         else:
             assert self.tmp_scanned_element == element, 'Scanned Error: tmp_scanned_element not the same one:' + self.tmp_scanned_element + ' != ' + element
@@ -234,8 +235,9 @@ class BasicSolver():
         - flg_change
         TODO: UNSOLVED, Grouped dropped part. test_demo[6]
         '''
+        
         return False
-    
+
     def check_squared_dropped(self, element):
         '''Check whether the element can be scanned in square form and dropped
 
@@ -247,4 +249,16 @@ class BasicSolver():
         TODO: UNSOLVED, Squared dropped part. test_demo[7]
         '''
         return False
+    
+    def update(self):
+        '''Update the self.data into a new state, clear the ready and record the steps
+        '''
+        ready = list(self.ready)
+        assert len(ready) > 0, 'Update Error: the length of ready ' + str(len(ready)) + ' is not greater than 0.'
+        for t in ready:
+            self.data[t[0]] = t[1]
+        self.steps.extend(self.ready)
+        self.ready = []
+        return True
+    
     

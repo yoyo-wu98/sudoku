@@ -97,7 +97,6 @@ class Structure():
         Output:
         - display_result(str): A string of display result
         '''
-        
         display = ''
         template_data = list('.' * (self.meta_size ** 4)) if not (self.flg_regular and self.meta_size < 4) else self.data
         for idx,char in enumerate(template_data):
