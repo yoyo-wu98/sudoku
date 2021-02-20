@@ -224,14 +224,27 @@ class BasicSolver():
         
         return self.check_scanned_drop(element, data=tmp_scanned_data)
 
-    # TODO: UNSOLVED, Grouped dropped part.
     def check_grouped_dropped(self, element):
-        '''Check whether the element can be scanned in grouped form and dropped
+        '''Check whether the element can be scanned in group form and dropped
 
         Input:
         - element
 
         Output:
         - flg_change
+        TODO: UNSOLVED, Grouped dropped part.
         '''
-        
+        return False
+    
+    def check_squared_dropped(self, element):
+        '''Check whether the element can be scanned in square form and dropped
+
+        Input:
+        - element
+
+        Output:
+        - flg_change
+        TODO: UNSOLVED, Squared dropped part.
+        '''
+        return False
+    
