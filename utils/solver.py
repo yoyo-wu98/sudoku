@@ -232,7 +232,7 @@ class BasicSolver():
 
         Output:
         - flg_change
-        TODO: UNSOLVED, Grouped dropped part.
+        TODO: UNSOLVED, Grouped dropped part. test_demo[6]
         '''
         return False
     
@@ -244,7 +244,7 @@ class BasicSolver():
 
         Output:
         - flg_change
-        TODO: UNSOLVED, Squared dropped part.
+        TODO: UNSOLVED, Squared dropped part. test_demo[7]
         '''
         return False
     
