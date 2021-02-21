@@ -2,6 +2,7 @@
 # python3.6
 
 from .structure import *
+from itertools import combinations
 # from .analytics import *
 
 class BasicSolver():
@@ -17,6 +18,16 @@ class BasicSolver():
     - ready: the step-by-step solutions which is ready to update [(idx, update_num), ...]
     - tmp_scanned_data
     - tmp_scanned_element
+
+    Functions:
+    - display
+    - update: Update the self.data into a new state, clear the ready and record the steps
+    - check_idx_only
+    - check_idx_last_left
+    - check_scanned_drop
+    - check_area_drop
+    - check_grouped_dropped
+    - check_squared_dropped
     # TODO: UNSOLVED, predict part
     '''
     def __init__(self, problem_structure):
@@ -28,6 +39,7 @@ class BasicSolver():
         self.idxes_need_to_solve = [idx for idx, i in enumerate(self.data_origin) if i == '.']
         self.steps = []
         self.ready = [] # the [{idx : update_num} ..] of what is ready to update
+        self.display = problem_structure.display
 
         self.tmp_scanned_data = None
         self.tmp_scanned_element = None
@@ -164,13 +176,15 @@ class BasicSolver():
         - flg_change
         '''
         if self.check_scanned_drop(element, out_scanned_data=True): 
-            print('No need to area drop, scanned drop is enough.')
-            return True# FIXME: UNSOLVED, first update the data and then do the rest part.
+            print('Before area drop, scanned drop made some changes.')
+            self.update()
+            return self.check_area_drop(element)
+            # return True # FIXME: UNSOLVED, first update the data and then do the rest part.
         else:
             assert self.tmp_scanned_element == element, 'Scanned Error: tmp_scanned_element not the same one:' + self.tmp_scanned_element + ' != ' + element
             tmp_scanned_data = list(self.tmp_scanned_data)
 
-        # FIXME:  SOLVED, area scanned part
+        # FIXME:  SOLVED, area scanned part. test_demo[6]
         # idxes_elements_distributed = [idx for idx, i in enumerate(self.data) if i == element]
         idxes_need_to_solve = [idx for idx, i in enumerate(tmp_scanned_data) if i == '.']
         boxes = self.structure.box_idx_list
@@ -225,7 +239,7 @@ class BasicSolver():
         
         return self.check_scanned_drop(element, data=tmp_scanned_data)
 
-    def check_grouped_dropped(self, element):
+    def check_group_drop(self, element):
         '''Check whether the element can be scanned in group form and dropped
 
         Input:
@@ -233,12 +247,64 @@ class BasicSolver():
 
         Output:
         - flg_change
-        TODO: UNSOLVED, Grouped dropped part. test_demo[6]
+        TODO: UNSOLVED, Group dropped part.
         '''
-        
-        return False
+        if self.check_scanned_drop(element, out_scanned_data=True): 
+            print('Before grouped drop, scanned drop can also make some changes.')
+            # self.update()
+            # return self.check_group_drop(element)
+            # return True # FIXME: SOLVED, no need to first update the data, just do the rest part. test_demo[8:11]
+        else:
+            assert self.tmp_scanned_element == element, 'Scanned Error: tmp_scanned_element not the same one:' + self.tmp_scanned_element + ' != ' + element
+        tmp_scanned_data = list(self.tmp_scanned_data)
+        # FIXME:  SOLVED, group scanned part
+        idxes_need_to_solve = [idx for idx, i in enumerate(tmp_scanned_data) if i == '.']
+        print(idxes_need_to_solve)
+        boxes = self.structure.box_idx_list
+        box_rows = []
+        box_cols = []
+        for box in boxes:
+            box_idxes_to_solve = list(set(box) & set(idxes_need_to_solve))
 
-    def check_squared_dropped(self, element):
+            box_rows.append(set([int(idx / (self.meta_size**2)) for idx in box_idxes_to_solve]))
+            box_cols.append(set([idx % (self.meta_size**2) for idx in box_idxes_to_solve]))
+        # print('box_rows', box_rows)
+        # print('box_cols', box_cols)
+        max_row_len = max([len(s) for s in box_rows])
+        max_col_len = max([len(c) for c in box_cols])
+
+        # Row group
+        for iter_num in range(2, max_row_len + 1):
+            combines = list(combinations(box_rows, iter_num))
+            # print('combines:')
+            for combine in combines:
+                # print('combine:', combine)
+                if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
+                    # print('Found the group drop part is', combine, ' rows.')
+                    rows = combine[0]
+                    for idx in idxes_need_to_solve:
+                        if int(idx / (self.meta_size**2)) in rows:
+                            # print('dropped', idx)
+                            tmp_scanned_data[idx] = ''
+        
+        # Col group
+        for iter_num in range(2, max_col_len + 1):
+            combines = list(combinations(box_cols, iter_num))
+            # print('combines:')
+            for combine in combines:
+                # print('combine:', combine)
+                if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
+                    # print('Found the group drop part is', combine, ' cols.')
+                    cols = combine[0]
+                    for idx in idxes_need_to_solve:
+                        if idx % (self.meta_size**2) in cols: 
+                            # print('dropped', idx)
+                            tmp_scanned_data[idx] = ''
+        
+        # print(self.display(tmp_scanned_data))
+        return self.check_scanned_drop(element, data=tmp_scanned_data)
+
+    def check_square_drop(self, element):
         '''Check whether the element can be scanned in square form and dropped
 
         Input:
@@ -246,12 +312,14 @@ class BasicSolver():
 
         Output:
         - flg_change
-        TODO: UNSOLVED, Squared dropped part. test_demo[7]
+
+        TODO: UNSOLVED, Square dropped part. test_demo[7]
         '''
         return False
     
     def update(self):
-        '''Update the self.data into a new state, clear the ready and record the steps
+        '''Update the self.data into a new state, clear the ready and record the steps.
+        Make sure that the length of ready is greater than 0.
         '''
         ready = list(self.ready)
         assert len(ready) > 0, 'Update Error: the length of ready ' + str(len(ready)) + ' is not greater than 0.'
@@ -260,5 +328,4 @@ class BasicSolver():
         self.steps.extend(self.ready)
         self.ready = []
         return True
-    
     
