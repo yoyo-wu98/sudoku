@@ -407,4 +407,31 @@ class BasicSolver():
         self.ready = []
         return True
     
-    # def step(self):
+    def step(self, data=None):
+        '''A step of the solution:
+            1. scan every element, checking for anks ready to update, save ready(scanned - area - group - square);
+            2. update the blanks;
+            
+        Input:
+        - data: if None(default), then use self.data
+        TODO: UNSOLVED, step part
+        '''
+        if data:
+            self.structure.check_data_and_boxes(data=data, processed=True)
+        else:
+            data = self.data
+        return False
+        
+    def check_all(self, data=None):
+        '''Check the selected data for whether it contains some blanks can be updated.
+        
+        Input:
+        - data: if None(default), then use the self.data.
+        TODO: UNSOLVED, check all part
+        '''
+        if data:
+            self.structure.check_data_and_boxes(data=data, processed=True)
+        else:
+            data = self.data
+        # for ele in self.element_set:
+        return False
