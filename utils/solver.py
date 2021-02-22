@@ -427,7 +427,7 @@ class BasicSolver():
         
         Input:
         - data: if None(default), then use the self.data.
-        TODO: UNSOLVED, check all part
+        TODO: UNSOLVED, check all part.
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
