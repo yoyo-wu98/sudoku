@@ -136,7 +136,7 @@ class BasicSolver():
 
         Input:
         - element
-        - data(structure.data): if None(default), then we use the self.data. # TODO: UNSOLVED, decide use data /(fresh and self.tmp_scanned_data) to pass the data.
+        - data(structure.data): if None(default), then we use the self.data. # TODO: SOLVED, Just leave them both. decide use data /(fresh and self.tmp_scanned_data) to pass the data.
         # - save_scanned_data(Boolean): if False, then we just do the basic scan and return flg_change;
         #                                 if True(default), then we save the tmp_scanned_date in self.tmp_scanned_data.
         - save_ready
