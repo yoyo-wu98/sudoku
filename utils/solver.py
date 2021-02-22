@@ -284,7 +284,7 @@ class BasicSolver():
         tmp_scanned_data = list(self.tmp_scanned_data[element]) if not fresh else list(self.data)
         # FIXME:  SOLVED, group scanned part
         idxes_need_to_solve = [idx for idx, i in enumerate(tmp_scanned_data) if i == '.']
-        print(idxes_need_to_solve)
+        # print(idxes_need_to_solve)
         boxes = self.structure.box_idx_list
         box_rows = []
         box_cols = []
