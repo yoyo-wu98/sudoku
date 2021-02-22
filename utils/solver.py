@@ -45,7 +45,7 @@ class BasicSolver():
         self.methods = {'scanned': self.check_scanned_drop, \
                     'area':self.check_area_drop, \
                     'group': self.check_group_drop, \
-                    'square': self.check_scanned_drop}
+                    'square': self.check_square_drop}
 
         self.tmp_scanned_data = {ele:list(self.data_origin) for ele in problem_structure.element_set}
         # self.tmp_scanned_element = None
@@ -71,7 +71,7 @@ class BasicSolver():
         data = data if data else list(self.data)
         # print(self.data[idx])
 
-        # Check if the index is in ready list
+        # Check if the index is already in ready list
         if idx in [i[0] for i in self.ready]: return False
 
         def check_idx_only_in_line(line, idx_in_line, element_set, candidate=candidate):
@@ -136,7 +136,7 @@ class BasicSolver():
 
         Input:
         - element
-        - data(structure.data): if None(default), then we use the self.data. # TODO: decide use data /(fresh and self.tmp_scanned_data) to pass the data.
+        - data(structure.data): if None(default), then we use the self.data. # TODO: UNSOLVED, decide use data /(fresh and self.tmp_scanned_data) to pass the data.
         # - save_scanned_data(Boolean): if False, then we just do the basic scan and return flg_change;
         #                                 if True(default), then we save the tmp_scanned_date in self.tmp_scanned_data.
         - save_ready
@@ -171,12 +171,12 @@ class BasicSolver():
         
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
-        print(self.structure.display(tmp_scanned_data))
+        # print(self.structure.display(tmp_scanned_data[element]))
         # print(idxes_need_to_solve)
 
         return flg_change
 
-    def scan_all(self, method='scanned', fresh=False, save_scanned_data=True, save_ready=True): # BUG: scan all does not work for square
+    def scan_all(self, method='scanned', fresh=False, save_scanned_data=True): # BUG: SOLVED, scan all does not work for square
         '''Scan all the elements in self.element_set with selected method
         Input:
         - method: check_scanned_drop(default)
@@ -184,8 +184,8 @@ class BasicSolver():
         '''
         re_elements = {ele: False for ele in self.structure.element_set}
         for ele in self.structure.element_set:
-            re_elements[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data, save_ready=save_ready)
-        return all(list(re_elements.values()))
+            re_elements[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data)
+        return any(list(re_elements.values()))
 
 
     def check_area_drop(self, element, fresh=False, save_scanned_data=False):
@@ -352,7 +352,7 @@ class BasicSolver():
         tmp_scanned_data = list(self.tmp_scanned_data[element]) if not fresh else list(self.data)
         # FIXME:  SOLVED, group scanned part
         idxes_need_to_solve = [idx for idx, i in enumerate(tmp_scanned_data) if i == '.']
-        print(idxes_need_to_solve)
+        # print(idxes_need_to_solve)
         rows_of = []
         cols_of = []
         for row in range(self.meta_size**2):
@@ -390,7 +390,7 @@ class BasicSolver():
                             # print('dropped', idx)
                             tmp_scanned_data[idx] = ''
         
-        # print(self.display(tmp_scanned_data))
+        # print(self.display(tmp_scanned_data[element]))
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
         return self.check_scanned_drop(element, data=tmp_scanned_data)
