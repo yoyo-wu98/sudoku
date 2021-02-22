@@ -42,6 +42,11 @@ class BasicSolver():
         self.ready = [] # the [{idx : update_num} ..] of what is ready to update
         self.display = problem_structure.display
 
+        self.methods = {'scanned': self.check_scanned_drop, \
+                    'area':self.check_area_drop, \
+                    'group': self.check_group_drop, \
+                    'square': self.check_scanned_drop}
+
         self.tmp_scanned_data = {ele:list(self.data_origin) for ele in problem_structure.element_set}
         # self.tmp_scanned_element = None
     
@@ -126,12 +131,12 @@ class BasicSolver():
     def check_idx_last_left(self, idx, data=None, last_left=True, candidate=None, save_ready=True):
         return self.check_idx_only(idx, data=data, last_left=last_left, candidate=candidate, save_ready=save_ready)
     
-    def check_scanned_drop(self, element, data=None, save_scanned_data=True, save_ready=True):
+    def check_scanned_drop(self, element, fresh=False, data=None, save_scanned_data=True, save_ready=True):
         '''Check whether the element can be scanned and dropped
 
         Input:
         - element
-        - data(structure.data): if None(default), then we use the self.data.
+        - data(structure.data): if None(default), then we use the self.data. # TODO: decide use data /(fresh and self.tmp_scanned_data) to pass the data.
         # - save_scanned_data(Boolean): if False, then we just do the basic scan and return flg_change;
         #                                 if True(default), then we save the tmp_scanned_date in self.tmp_scanned_data.
         - save_ready
@@ -144,7 +149,7 @@ class BasicSolver():
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
         else:
-            data = list(self.data) # FIXME: SOLVED, all copy should be replaced by deepcopy
+            data = list(self.tmp_scanned_data[element]) if not fresh else list(self.data) # FIXME: SOLVED, all copy should be replaced by deepcopy
         idxes_elements_distributed = [idx for idx, i in enumerate(data) if i == element]
         idxes_need_to_solve = list(self.idxes_need_to_solve)
         tmp_scanned_data = list(data)
@@ -171,6 +176,18 @@ class BasicSolver():
 
         return flg_change
 
+    def scan_all(self, method='scanned', fresh=False, save_scanned_data=True, save_ready=True): # BUG: scan all does not work for square
+        '''Scan all the elements in self.element_set with selected method
+        Input:
+        - method: check_scanned_drop(default)
+        - save_ready
+        '''
+        re_elements = {ele: False for ele in self.structure.element_set}
+        for ele in self.structure.element_set:
+            re_elements[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data, save_ready=save_ready)
+        return all(list(re_elements.values()))
+
+
     def check_area_drop(self, element, fresh=False, save_scanned_data=False):
         '''Check whether the element can be scanned in the area form and dropped
 
@@ -183,7 +200,7 @@ class BasicSolver():
         Output:
         - flg_change
         '''
-        if self.check_scanned_drop(element, save_scanned_data=False):
+        if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False):
             print('Before grouped drop, scanned drop can also make some changes.')
             # self.update()
             # return self.check_area_drop(element)
@@ -257,13 +274,13 @@ class BasicSolver():
 
         Output:
         - flg_change
-        TODO: SOLVED, Group dropped part.
+        TODO: SOLVED, Group dropped part. test_demo[7:10]
         '''
-        if self.check_scanned_drop(element, save_scanned_data=False): 
+        if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False): 
             print('Before grouped drop, scanned drop can also make some changes.')
             # self.update()
             # return self.check_group_drop(element)
-            # return True # FIXME: SOLVED, no need to first update the data, just do the rest part. test_demo[7:10]
+            # return True # FIXME: SOLVED, no need to first update the data, just do the rest part.
         tmp_scanned_data = list(self.tmp_scanned_data[element]) if not fresh else list(self.data)
         # FIXME:  SOLVED, group scanned part
         idxes_need_to_solve = [idx for idx, i in enumerate(tmp_scanned_data) if i == '.']
@@ -327,7 +344,7 @@ class BasicSolver():
 
         TODO: SOLVED, Square dropped part. test_demo[11]
         '''
-        if self.check_scanned_drop(element, save_scanned_data=False): 
+        if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False): 
             print('Before grouped drop, scanned drop can also make some changes.')
             # self.update()
             # return self.check_group_drop(element)
@@ -390,3 +407,4 @@ class BasicSolver():
         self.ready = []
         return True
     
+    # def step(self):
