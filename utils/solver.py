@@ -16,7 +16,7 @@ class BasicSolver():
     - idxes_need_to_solve: list of indexes where the blank not solved [idx, ...]
     - steps: the step-by-step history of the solving process [(idx, update_num), ...]
     - ready: the step-by-step solutions which is ready to update [(idx, update_num), ...]
-    - tmp_scanned_data # TODO: UNSOLVED, make self.tmp_scanned_data a list of dict {element: tmp_scanned_data ...} and delete self.tmp_scanned_element
+    - tmp_scanned_data # TODO: SOLVED, make self.tmp_scanned_data a list of dict {element: tmp_scanned_data ...} and delete self.tmp_scanned_element
     # - tmp_scanned_element
 
     Functions:
@@ -29,7 +29,7 @@ class BasicSolver():
     - check_grouped_dropped
     - check_squared_dropped
     # TODO: UNSOLVED, predict part
-    # FIXME: UNSOLVED, save_ready & save_scanned_data seperated
+    # FIXME: SOLVED, save_ready & save_scanned_data seperated
     '''
     def __init__(self, problem_structure):
         assert problem_structure.__class__ == Structure, 'Parameter error: The problem_structure\'s class is not Structure.'
@@ -307,7 +307,7 @@ class BasicSolver():
                     for idx in idxes_need_to_solve:
                         if idx % (self.meta_size**2) in cols: 
                             # print('dropped', idx)
-                            tmp_scanned_data[idx] = '' # TODO: UNSOLVED, make every solver save their tmp_scanned_data
+                            tmp_scanned_data[idx] = '' # TODO: SOLVED, make every solver save their tmp_scanned_data
         
         # print(self.display(tmp_scanned_data))
         if save_scanned_data:
