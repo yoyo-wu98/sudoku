@@ -299,7 +299,7 @@ class BasicSolver():
         Output:
         - flg_change
         TODO: SOLVED, Group dropped part. test_demo[7:10]
-        BUG: UNSOLVED, STILL not fixed!!!
+        BUG: UNSOLVED, THE SAME AS AREA SCAN PART, STILL not fixed!!!
         '''
         if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False): 
             # print('Before grouped drop, scanned drop can also make some changes.')
