@@ -417,6 +417,7 @@ class BasicSolver():
         Input:
         - data: if None(default), then use self.data
         TODO: SOLVED, step part
+        BUG: UNSOLVED, solve not complete
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
