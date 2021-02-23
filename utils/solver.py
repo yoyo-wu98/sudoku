@@ -86,7 +86,7 @@ class BasicSolver():
             Output:
             - flg_change
             '''
-            candidate = candidate if candidate else list(element_set - set(line))[0]
+            candidate = candidate if candidate else list(element_set - set(line))[0] if len(element_set - set(line)) == 1 else element_set - set(line)
             return candidate if (line[idx_in_line] == '.' and line.count('.') == 1) else element_set - set(line)
         
         # Check row
@@ -95,6 +95,8 @@ class BasicSolver():
         re_row = check_idx_only_in_line(row_line, idx_in_row_line, self.structure.element_set)
         # print(row_line, idx_in_row_line, re_row)
         if type(re_row) != set:
+            if re_row in row_line:
+                return False
             if save_ready:
                 self.ready.append((idx, re_row))
             return True
@@ -105,6 +107,8 @@ class BasicSolver():
         re_col = check_idx_only_in_line(col_line, idx_in_col_line, self.structure.element_set)
         # print(col_line, idx_in_col_line, re_col)
         if type(re_col) != set:
+            if re_col in col_line:
+                return False
             if save_ready:
                 self.ready.append((idx, re_col))
             return True
@@ -115,6 +119,8 @@ class BasicSolver():
         re_box = check_idx_only_in_line(box_line, idx_in_box_line, self.structure.element_set)
         # print(box_line, idx_in_box_line, re_box)
         if type(re_box) != set:
+            if re_box in box_line:
+                return False
             if save_ready:
                 self.ready.append((idx, re_box))
             return True
@@ -122,6 +128,8 @@ class BasicSolver():
         if last_left:
             re = list(re_col & re_row & re_box)
             if len(re) == 1:
+                if re[0] in col_line or re[0] in row_line or re[0] in box_line:
+                    return False
                 if save_ready:
                     self.ready.append((idx, re[0]))
                 return True
@@ -434,6 +442,7 @@ class BasicSolver():
         - data: if None(default), then use self.data
         TODO: SOLVED, step part
         BUG: UNSOLVED, solve not complete, CHECKED its area scan part BUG, forget to check for element already exists.
+        BUG: UNSOLVED, scan drop also has a bug
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
@@ -443,8 +452,8 @@ class BasicSolver():
         for method in self.methods:
             if method == 'scanned':
                 re[method] = self.scan_all(method, fresh=True, save_scanned_data=True, save_ready=True)
-            else:
-                re[method] = self.scan_all(method, fresh=False, save_scanned_data=False, save_ready=True)
+            # else:
+            #     re[method] = self.scan_all(method, fresh=False, save_scanned_data=False, save_ready=True)
         print(self.display())
         print('re step : ', re)
         print('Before - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
