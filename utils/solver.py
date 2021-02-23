@@ -185,6 +185,7 @@ class BasicSolver():
         re = {ele: False for ele in self.structure.element_set}
         for ele in self.structure.element_set:
             re[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data, save_ready=save_ready)
+            print('method : ', method, '\n result ready : ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
         return any(list(re.values()))
 
     def check_area_drop(self, element, fresh=False, save_scanned_data=False, save_ready=False):
@@ -198,6 +199,7 @@ class BasicSolver():
 
         Output:
         - flg_change
+        BUG: UNSOLVED, STILL not fixed!!!
         '''
         if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False):
             # print('Before area drop, scanned drop can also make some changes.')
@@ -213,7 +215,11 @@ class BasicSolver():
         boxes = self.structure.box_idx_list
 
         # Box
+        # print('Box : ')
         for box in boxes:
+            # print('box : ', box)
+            if element in [tmp_scanned_data[idx] for idx in box]:
+                continue
             box_idxes_to_solve = list(set(box) & set(idxes_need_to_solve))
 
             rows_of = []
@@ -224,17 +230,22 @@ class BasicSolver():
             
             if len(set(rows_of)) == 1:
                 row = rows_of[0]
+                # print(' - row : ', row)
                 for idx in idxes_need_to_solve:
                     if int(idx / (self.meta_size**2)) == row: tmp_scanned_data[idx] = ''
             
             if len(set(cols_of)) == 1:
                 col = cols_of[0]
+                # print(' - col : ', col)
                 for idx in idxes_need_to_solve:
                     if idx % (self.meta_size**2) == col: tmp_scanned_data[idx] = ''
         
         # Row
+        # print('Row : ')
         for rowi in range(self.meta_size**2):
-            row = [range(rowi * (self.meta_size**2), (rowi + 1) * (self.meta_size**2))]
+            row = range(rowi * (self.meta_size**2), (rowi + 1) * (self.meta_size**2))
+            if element in [tmp_scanned_data[idx] for idx in row]:
+                continue
             row_idxes_to_solve = list(set(row) & set(idxes_need_to_solve))
             
             boxes_of = []
@@ -243,20 +254,25 @@ class BasicSolver():
 
             if len(set(boxes_of)) == 1:
                 box = boxes_of[0]
+                # print(' - box : ', box)
                 for idx in idxes_need_to_solve:
                     if self.structure.get_boxid_by_idx(idx) == box: tmp_scanned_data[idx] = ''
         
         # Col
+        # print('Col : ')
         for coli in range(self.meta_size**2):
             col = [coli + row * self.meta_size**2 for row in range(self.meta_size**2)]
+            if element in [tmp_scanned_data[idx] for idx in col]:
+                continue
             col_idxes_to_solve = list(set(col) & set(idxes_need_to_solve))
             
-            cols_of = []
+            boxes_of = []
             for idx in col_idxes_to_solve:
                 boxes_of.append(self.structure.get_boxid_by_idx(idx))
 
             if len(set(boxes_of)) == 1:
                 box = boxes_of[0]
+                # print(' - box : ', box)
                 for idx in idxes_need_to_solve:
                     if self.structure.get_boxid_by_idx(idx) == box: tmp_scanned_data[idx] = ''
         
@@ -417,7 +433,7 @@ class BasicSolver():
         Input:
         - data: if None(default), then use self.data
         TODO: SOLVED, step part
-        BUG: UNSOLVED, solve not complete, CHECKED its area scan part BUG
+        BUG: UNSOLVED, solve not complete, CHECKED its area scan part BUG, forget to check for element already exists.
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
