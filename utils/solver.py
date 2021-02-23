@@ -240,13 +240,13 @@ class BasicSolver():
                 row = rows_of[0]
                 # print(' - row : ', row)
                 for idx in idxes_need_to_solve:
-                    if int(idx / (self.meta_size**2)) == row: tmp_scanned_data[idx] = ''
+                    if int(idx / (self.meta_size**2)) == row and idx not in box: tmp_scanned_data[idx] = ''
             
             if len(set(cols_of)) == 1:
                 col = cols_of[0]
                 # print(' - col : ', col)
                 for idx in idxes_need_to_solve:
-                    if idx % (self.meta_size**2) == col: tmp_scanned_data[idx] = ''
+                    if idx % (self.meta_size**2) == col and idx not in box: tmp_scanned_data[idx] = ''
         
         # Row
         # print('Row : ')
@@ -264,7 +264,7 @@ class BasicSolver():
                 box = boxes_of[0]
                 # print(' - box : ', box)
                 for idx in idxes_need_to_solve:
-                    if self.structure.get_boxid_by_idx(idx) == box: tmp_scanned_data[idx] = ''
+                    if self.structure.get_boxid_by_idx(idx) == box and idx not in row: tmp_scanned_data[idx] = ''
         
         # Col
         # print('Col : ')
@@ -282,7 +282,7 @@ class BasicSolver():
                 box = boxes_of[0]
                 # print(' - box : ', box)
                 for idx in idxes_need_to_solve:
-                    if self.structure.get_boxid_by_idx(idx) == box: tmp_scanned_data[idx] = ''
+                    if self.structure.get_boxid_by_idx(idx) == box and idx not in col: tmp_scanned_data[idx] = ''
         
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
@@ -299,6 +299,7 @@ class BasicSolver():
         Output:
         - flg_change
         TODO: SOLVED, Group dropped part. test_demo[7:10]
+        BUG: UNSOLVED, STILL not fixed!!!
         '''
         if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False): 
             # print('Before grouped drop, scanned drop can also make some changes.')
@@ -324,13 +325,14 @@ class BasicSolver():
         max_col_len = max([len(c) for c in box_cols])
 
         # Row group
-        for iter_num in range(2, max_row_len + 1):
+        for iter_num in range(2, max_row_len + 1): # FIXME: UNSOLVED, REWIRTE THIS PART, MAKE SURE THAT THE GROUP PART DO NOT BE DELETED 
             combines = list(combinations(box_rows, iter_num))
             # print('combines:')
             for combine in combines:
                 # print('combine:', combine)
                 if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    # print('Found the group drop part is', combine, ' rows.')
+                    print('Found the group drop part is', combine, ' rows.')
+                    print(self.display(self.tmp_scanned_data[element]))
                     rows = combine[0]
                     for idx in idxes_need_to_solve:
                         if int(idx / (self.meta_size**2)) in rows:
@@ -452,13 +454,14 @@ class BasicSolver():
         for method in self.methods:
             if method == 'scanned':
                 re[method] = self.scan_all(method, fresh=True, save_scanned_data=True, save_ready=True)
-            # else:
-            #     re[method] = self.scan_all(method, fresh=False, save_scanned_data=False, save_ready=True)
-        print(self.display())
+            else:
+                re[method] = self.scan_all(method, fresh=False, save_scanned_data=False, save_ready=True)
+        # print(self.display())
         print('re step : ', re)
         print('Before - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
         if any(list(re.values())):
             re_step = self.update()
+            print(self.display())
             print('After - ready: ', self.ready)
             return re_step
         else:
