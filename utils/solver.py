@@ -417,7 +417,7 @@ class BasicSolver():
         Input:
         - data: if None(default), then use self.data
         TODO: SOLVED, step part
-        BUG: UNSOLVED, solve not complete
+        BUG: UNSOLVED, solve not complete, CHECKED its area scan part BUG
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
@@ -429,12 +429,12 @@ class BasicSolver():
                 re[method] = self.scan_all(method, fresh=True, save_scanned_data=True, save_ready=True)
             else:
                 re[method] = self.scan_all(method, fresh=False, save_scanned_data=False, save_ready=True)
+        print(self.display())
         print('re step : ', re)
-        print('Before - ready: ', self.ready)
+        print('Before - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
         if any(list(re.values())):
             re_step = self.update()
             print('After - ready: ', self.ready)
-            print(self.display())
             return re_step
         else:
             return False
