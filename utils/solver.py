@@ -176,7 +176,7 @@ class BasicSolver():
 
         return flg_change
 
-    def scan_all(self, method='scanned', fresh=False, save_scanned_data=True): # BUG: SOLVED, scan all does not work for square
+    def scan_all(self, method='scanned', fresh=False, save_scanned_data=True, save_ready=False): # BUG: SOLVED, scan all does not work for square
         '''Scan all the elements in self.element_set with selected method
         Input:
         - method: check_scanned_drop(default)
@@ -184,11 +184,10 @@ class BasicSolver():
         '''
         re = {ele: False for ele in self.structure.element_set}
         for ele in self.structure.element_set:
-            re[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data)
+            re[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data, save_ready=save_ready)
         return any(list(re.values()))
 
-
-    def check_area_drop(self, element, fresh=False, save_scanned_data=False):
+    def check_area_drop(self, element, fresh=False, save_scanned_data=False, save_ready=False):
         '''Check whether the element can be scanned in the area form and dropped
 
         Input:
@@ -201,7 +200,7 @@ class BasicSolver():
         - flg_change
         '''
         if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False):
-            print('Before grouped drop, scanned drop can also make some changes.')
+            print('Before area drop, scanned drop can also make some changes.')
             # self.update()
             # return self.check_area_drop(element)
             # return True # FIXME: SOLVED, first update the data and then do the rest part.
@@ -262,9 +261,9 @@ class BasicSolver():
         
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
-        return self.check_scanned_drop(element, data=tmp_scanned_data)
+        return self.check_scanned_drop(element, data=tmp_scanned_data, save_ready=save_ready)
 
-    def check_group_drop(self, element, fresh=False, save_scanned_data=False):
+    def check_group_drop(self, element, fresh=False, save_scanned_data=False, save_ready=True):
         '''Check whether the element can be scanned in group form and dropped
 
         Input:
@@ -305,7 +304,7 @@ class BasicSolver():
             for combine in combines:
                 # print('combine:', combine)
                 if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    # print('Found the group drop part is', combine, ' rows.')
+                    print('Found the group drop part is', combine, ' rows.')
                     rows = combine[0]
                     for idx in idxes_need_to_solve:
                         if int(idx / (self.meta_size**2)) in rows:
@@ -319,7 +318,7 @@ class BasicSolver():
             for combine in combines:
                 # print('combine:', combine)
                 if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    # print('Found the group drop part is', combine, ' cols.')
+                    print('Found the group drop part is', combine, ' cols.')
                     cols = combine[0]
                     for idx in idxes_need_to_solve:
                         if idx % (self.meta_size**2) in cols: 
@@ -329,9 +328,9 @@ class BasicSolver():
         # print(self.display(tmp_scanned_data))
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
-        return self.check_scanned_drop(element, data=tmp_scanned_data)
+        return self.check_scanned_drop(element, data=tmp_scanned_data, save_ready=save_ready)
 
-    def check_square_drop(self, element, fresh=False, save_scanned_data=False):
+    def check_square_drop(self, element, fresh=False, save_scanned_data=False, save_ready=True):
         '''Check whether the element can be scanned in square form and dropped
 
         Input:
@@ -345,7 +344,7 @@ class BasicSolver():
         TODO: SOLVED, Square dropped part. test_demo[11]
         '''
         if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False): 
-            print('Before grouped drop, scanned drop can also make some changes.')
+            print('Before square drop, scanned drop can also make some changes.')
             # self.update()
             # return self.check_group_drop(element)
             # return True # FIXME: SOLVED, no need to first update the data, just do the rest part. test_demo[11]
@@ -369,7 +368,7 @@ class BasicSolver():
             for combine in combines:
                 # print('combine:', combine)
                 if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    print('Found the group drop part is', combine, ' rows.')
+                    print('Found the square drop part is', combine, ' rows.')
                     cols = combine[0]
                     for idx in idxes_need_to_solve:
                         if idx % (self.meta_size**2) in cols:
@@ -383,7 +382,7 @@ class BasicSolver():
             for combine in combines:
                 # print('combine:', combine)
                 if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    print('Found the group drop part is', combine, ' cols.')
+                    print('Found the square drop part is', combine, ' cols.')
                     rows = combine[0]
                     for idx in idxes_need_to_solve:
                         if int(idx / (self.meta_size**2)) in rows: 
@@ -393,7 +392,7 @@ class BasicSolver():
         # print(self.display(tmp_scanned_data[element]))
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
-        return self.check_scanned_drop(element, data=tmp_scanned_data)
+        return self.check_scanned_drop(element, data=tmp_scanned_data, save_ready=save_ready)
     
     def update(self):
         '''Update the self.data into a new state, clear the ready and record the steps.
@@ -420,7 +419,17 @@ class BasicSolver():
             self.structure.check_data_and_boxes(data=data, processed=True)
         else:
             data = self.data
-        return False
+        re = {method : False for method in self.methods}
+        for method in self.methods:
+            if method == 'scanned':
+                re[method] = self.scan_all(method, save_scanned_data=True, save_ready=True)
+            else:
+                re[method] = self.scan_all(method, save_scanned_data=False, save_ready=True)
+        if any(list(re.values())):
+            return self.update()
+        else:
+            return False
+        # return False
         
     def check(self, data=None):
         '''Check the selected data for whether it contains some blanks can be updated.
@@ -429,6 +438,9 @@ class BasicSolver():
         - data: if None(default), then use the self.data.
         TODO: UNSOLVED, check all part. NEED TO TEST AND RECHECK.
         FIXME: UNSOLVED, make every check optional for save_ready.
+
+        Output:
+        - flg: True if the puzzle can be updated now
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
@@ -439,7 +451,7 @@ class BasicSolver():
         re = {method : False for method in self.methods}
         for method in self.methods:
             if method == 'scanned':
-                re[method] = self.scan_all(method, save_scanned_data=True)
+                re[method] = self.scan_all(method, save_scanned_data=True, save_ready=False)
             else:
-                re[method] = self.scan_all(method, save_scanned_data=False)
+                re[method] = self.scan_all(method, save_scanned_data=False, save_ready=False)
         return any(list(re.values()))
