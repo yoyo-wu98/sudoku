@@ -413,7 +413,7 @@ class BasicSolver():
             
         Input:
         - data: if None(default), then use self.data
-        TODO: UNSOLVED, step part
+        TODO: SOLVED, step part
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
@@ -436,8 +436,8 @@ class BasicSolver():
         
         Input:
         - data: if None(default), then use the self.data.
-        TODO: UNSOLVED, check all part. NEED TO TEST AND RECHECK.
-        FIXME: UNSOLVED, make every check optional for save_ready.
+        TODO: SOLVED, check all part. NEED TO TEST AND RECHECK.
+        FIXME: SOLVED, make every check optional for save_ready.
 
         Output:
         - flg: True if the puzzle can be updated now
