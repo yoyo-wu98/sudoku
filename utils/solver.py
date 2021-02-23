@@ -182,10 +182,10 @@ class BasicSolver():
         - method: check_scanned_drop(default)
         - save_ready
         '''
-        re_elements = {ele: False for ele in self.structure.element_set}
+        re = {ele: False for ele in self.structure.element_set}
         for ele in self.structure.element_set:
-            re_elements[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data)
-        return any(list(re_elements.values()))
+            re[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data)
+        return any(list(re.values()))
 
 
     def check_area_drop(self, element, fresh=False, save_scanned_data=False):
@@ -422,16 +422,24 @@ class BasicSolver():
             data = self.data
         return False
         
-    def check_all(self, data=None):
+    def check(self, data=None):
         '''Check the selected data for whether it contains some blanks can be updated.
         
         Input:
         - data: if None(default), then use the self.data.
-        TODO: UNSOLVED, check all part.
+        TODO: UNSOLVED, check all part. NEED TO TEST AND RECHECK.
+        FIXME: UNSOLVED, make every check optional for save_ready.
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
         else:
             data = self.data
         # for ele in self.element_set:
-        return False
+        # scan_all(self, method='scanned', fresh=False, save_scanned_data=True)
+        re = {method : False for method in self.methods}
+        for method in self.methods:
+            if method == 'scanned':
+                re[method] = self.scan_all(method, save_scanned_data=True)
+            else:
+                re[method] = self.scan_all(method, save_scanned_data=False)
+        return any(list(re.values()))
