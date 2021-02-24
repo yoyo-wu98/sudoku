@@ -177,7 +177,7 @@ class BasicSolver():
         
         flg_change = False
         for idx in idxes_need_to_solve:
-            if self.check_idx_only(idx, tmp_scanned_data, candidate=element, save_ready=save_ready): flg_change = True
+            if self.check_idx_only(idx, tmp_scanned_data, candidate=element, save_ready=save_ready) or self.check_idx_last_left(idx, tmp_scanned_data, candidate=element, save_ready=save_ready): flg_change = True
         
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
@@ -384,40 +384,41 @@ class BasicSolver():
         # FIXME:  SOLVED, group scanned part
         idxes_need_to_solve = [idx for idx, i in enumerate(tmp_scanned_data) if i == '.']
         # print(idxes_need_to_solve)
-        rows_of = []
-        cols_of = []
-        for row in range(self.meta_size**2):
-            row_idxes_to_solve = list(set(range(row * self.meta_size**2, (row + 1) * self.meta_size**2)) & set(idxes_need_to_solve))
-            rows_of.append(set([idx % (self.meta_size**2) for idx in row_idxes_to_solve]))
-        for col in range(self.meta_size**2):
-            col_idxes_to_solve = list(set([col + row * self.meta_size**2 for row in range(self.meta_size**2)]) & set(idxes_need_to_solve))
-            cols_of.append(set([int(idx / (self.meta_size**2)) for idx in col_idxes_to_solve]))
+        rows_of = {boxid : None for boxid in range(self.meta_size**2)}
+        cols_of = {boxid : None for boxid in range(self.meta_size**2)}
+        for row_id in range(self.meta_size**2):
+            row_idxes_to_solve = list(set(range(row_id * self.meta_size**2, (row_id + 1) * self.meta_size**2)) & set(idxes_need_to_solve))
+            rows_of[row_id] = set([idx % (self.meta_size**2) for idx in row_idxes_to_solve])
+        for col_id in range(self.meta_size**2):
+            col_idxes_to_solve = list(set([col_id + row * self.meta_size**2 for row in range(self.meta_size**2)]) & set(idxes_need_to_solve))
+            cols_of[col_id] = set([int(idx / (self.meta_size**2)) for idx in col_idxes_to_solve])
 
         # Row group
         for iter_num in range(2, self.meta_size):
-            combines = list(combinations(rows_of, iter_num))
+            combines_key = list(combinations(rows_of, iter_num))
             # print('combines:')
-            for combine in combines:
-                # print('combine:', combine)
-                if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    # print('Found the square drop part is', combine, ' rows.')
-                    cols = combine[0]
+            for combine_key in combines_key:
+                # print('combine_key :', combine_key)
+                if all(list(map(lambda x: rows_of[x] == rows_of[combine_key[0]], combine_key))) and len(rows_of[combine_key[0]]) == iter_num:
+                    print('Found the square drop part in the row ', combine_key, ' is ', rows_of[combine_key[0]], ' cols.')
+                    cols = rows_of[combine_key[0]]
+                    print('cols : ', cols)
                     for idx in idxes_need_to_solve:
-                        if idx % (self.meta_size**2) in cols:
+                        if idx % (self.meta_size**2) in cols and idx not in sum([list(range(row_id * (self.meta_size**2), (row_id + 1) * (self.meta_size**2))) for row_id in combine_key], []):
                             # print('dropped', idx)
                             tmp_scanned_data[idx] = ''
         
         # Col group
         for iter_num in range(2, self.meta_size):
-            combines = list(combinations(cols_of, iter_num))
+            combines_key = list(combinations(cols_of, iter_num))
             # print('combines:')
-            for combine in combines:
+            for combine_key in combines_key:
                 # print('combine:', combine)
-                if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    # print('Found the square drop part is', combine, ' cols.')
-                    rows = combine[0]
+                if all(list(map(lambda x: cols_of[x] == cols_of[combine_key[0]], combine_key))) and len(cols_of[combine_key[0]]) == iter_num:
+                    print('Found the square drop part in the col ', combine_key, ' is ', cols_of[combine_key[0]], ' rows.')
+                    rows = cols_of[combine_key[0]]
                     for idx in idxes_need_to_solve:
-                        if int(idx / (self.meta_size**2)) in rows: 
+                        if int(idx / (self.meta_size**2)) in rows and idx not in sum([[col_id + row * self.meta_size**2 for row in range(self.meta_size**2)] for col_id in combine_key], []):
                             # print('dropped', idx)
                             tmp_scanned_data[idx] = ''
         
@@ -446,8 +447,8 @@ class BasicSolver():
         Input:
         - data: if None(default), then use self.data
         TODO: SOLVED, step part
-        BUG: UNSOLVED, solve not complete, CHECKED its area scan part BUG, forget to check for element already exists.
-        BUG: UNSOLVED, scan drop also has a bug
+        BUG: SOLVED, solve not complete, CHECKED its area scan part BUG, forget to check for element already exists.
+        BUG: SOLVED, scan drop also has a bug
         '''
         if data:
             self.structure.check_data_and_boxes(data=data, processed=True)
