@@ -511,8 +511,11 @@ class BasicSolver():
 
     def solve(self):
         '''Do the whole process of our basic solver until nothing can be done by basic solver.
+
+        Output:
+        - step number: how many blank be updated
         '''
         while not self.done_check() and self.step():
             continue
         print(self.display())
-        return self.done_check()
+        return len(self.steps)
