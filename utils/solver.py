@@ -1,9 +1,12 @@
 # coding:utf-8
 # python3.6
 
+# Our libraries:
 from .structure import *
-from itertools import combinations
 # from .analytics import *
+
+# Externel environment
+from itertools import combinations
 
 class BasicSolver():
     '''The basic solver for the sudoku puzzle.
@@ -195,7 +198,7 @@ class BasicSolver():
         re = {ele: False for ele in self.structure.element_set}
         for ele in self.structure.element_set:
             re[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data, save_ready=save_ready)
-            print('method : ', method,  ' element: ', ele, '\n result ready : ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
+            # print('method : ', method,  ' element: ', ele, '\n result ready : ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
         return any(list(re.values()))
 
     def check_area_drop(self, element, fresh=False, save_scanned_data=False, save_ready=False):
@@ -338,8 +341,7 @@ class BasicSolver():
                     rows = box_rows[combine_key[0]]
                     for idx in idxes_need_to_solve:
                         if int(idx / (self.meta_size**2)) in rows and idx not in sum([boxes[boxid] for boxid in combine_key], []):
-                            print(sum([boxes[boxid] for boxid in combine_key], []))
-                            print('dropped', idx)
+                            # print('dropped', idx)
                             tmp_scanned_data[idx] = ''
         
         # Col group
@@ -400,9 +402,9 @@ class BasicSolver():
             for combine_key in combines_key:
                 # print('combine_key :', combine_key)
                 if all(list(map(lambda x: rows_of[x] == rows_of[combine_key[0]], combine_key))) and len(rows_of[combine_key[0]]) == iter_num:
-                    print('Found the square drop part in the row ', combine_key, ' is ', rows_of[combine_key[0]], ' cols.')
+                    # print('Found the square drop part in the row ', combine_key, ' is ', rows_of[combine_key[0]], ' cols.')
                     cols = rows_of[combine_key[0]]
-                    print('cols : ', cols)
+                    # print('cols : ', cols)
                     for idx in idxes_need_to_solve:
                         if idx % (self.meta_size**2) in cols and idx not in sum([list(range(row_id * (self.meta_size**2), (row_id + 1) * (self.meta_size**2))) for row_id in combine_key], []):
                             # print('dropped', idx)
@@ -415,7 +417,7 @@ class BasicSolver():
             for combine_key in combines_key:
                 # print('combine:', combine)
                 if all(list(map(lambda x: cols_of[x] == cols_of[combine_key[0]], combine_key))) and len(cols_of[combine_key[0]]) == iter_num:
-                    print('Found the square drop part in the col ', combine_key, ' is ', cols_of[combine_key[0]], ' rows.')
+                    # print('Found the square drop part in the col ', combine_key, ' is ', cols_of[combine_key[0]], ' rows.')
                     rows = cols_of[combine_key[0]]
                     for idx in idxes_need_to_solve:
                         if int(idx / (self.meta_size**2)) in rows and idx not in sum([[col_id + row * self.meta_size**2 for row in range(self.meta_size**2)] for col_id in combine_key], []):
@@ -461,12 +463,12 @@ class BasicSolver():
             else:
                 re[method] = self.scan_all(method, fresh=False, save_scanned_data=False, save_ready=True)
         # print(self.display())
-        print('re step : ', re)
+        # print('re step : ', re)
         # print('Before - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
         if any(list(re.values())):
             re_step = self.update()
             # print(self.display())
-            print('After - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
+            # print('After - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
             return re_step
         else:
             return False
