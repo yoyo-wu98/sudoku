@@ -212,7 +212,7 @@ class BasicSolver():
 
         Output:
         - flg_change
-        BUG: UNSOLVED, STILL not fixed!!!
+        BUG: SOLVED, STILL not fixed!!!
         '''
         if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False):
             # print('Before area drop, scanned drop can also make some changes.')
@@ -304,7 +304,7 @@ class BasicSolver():
         Output:
         - flg_change
         TODO: SOLVED, Group dropped part. test_demo[7:10]
-        BUG: UNSOLVED, THE SAME AS AREA SCAN PART, STILL not fixed!!!
+        BUG: SOLVED, THE SAME AS AREA SCAN PART, STILL not fixed!!!
         '''
         if self.check_scanned_drop(element, save_scanned_data=False, save_ready=False): 
             # print('Before grouped drop, scanned drop can also make some changes.')
@@ -330,7 +330,7 @@ class BasicSolver():
         max_col_len = max([len(c) for c in box_cols.values()])
 
         # Row group
-        for iter_num in range(2, max_row_len + 1): # FIXME: UNSOLVED, REWIRTE THIS PART, MAKE SURE THAT THE GROUP PART DO NOT BE DELETED 
+        for iter_num in range(2, max_row_len + 1): # FIXME: SOLVED, REWIRTE THIS PART, MAKE SURE THAT THE GROUP PART DO NOT BE DELETED 
             combines_key = list(combinations(box_rows, iter_num))
             # print('combines:')
             for combine_key in combines_key:
