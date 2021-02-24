@@ -4,3 +4,8 @@ Do the sudoku puzzles in the human thinking patterns and computer thinking patte
 
 
 Still in progress.
+
+[x] basic solver part.
+[ ] predict part
+[ ] analytics part
+[ ] vision part
