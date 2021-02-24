@@ -159,7 +159,7 @@ class BasicSolver():
         else:
             data = list(self.tmp_scanned_data[element]) if not fresh else list(self.data) # FIXME: SOLVED, all copy should be replaced by deepcopy
         idxes_elements_distributed = [idx for idx, i in enumerate(data) if i == element]
-        idxes_need_to_solve = list(self.idxes_need_to_solve)
+        idxes_need_to_solve = [idx for idx, i  in enumerate(data) if i == '.']
         tmp_scanned_data = list(data)
         # check_in_same_row int(idx_1 / (meta_size**2)) == int(idx_2 / (meta_size**2))
         # check_in_same_col idx_1 % (meta_size**2) == idx_2 % (meta_size**2)
@@ -171,6 +171,8 @@ class BasicSolver():
               self.structure.get_boxid_by_idx(idx) != self.structure.get_boxid_by_idx(i) \
             )]
         for idx in list(set(self.idxes_need_to_solve) - set(idxes_need_to_solve)):
+            # if save_scanned_data:
+            #     print('drop scanned element ', element, ' in idx ', idx)
             tmp_scanned_data[idx] = ''
         
         flg_change = False
@@ -193,7 +195,7 @@ class BasicSolver():
         re = {ele: False for ele in self.structure.element_set}
         for ele in self.structure.element_set:
             re[ele] = self.methods[method](ele, fresh=fresh, save_scanned_data=save_scanned_data, save_ready=save_ready)
-            print('method : ', method, '\n result ready : ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
+            print('method : ', method,  ' element: ', ele, '\n result ready : ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
         return any(list(re.values()))
 
     def check_area_drop(self, element, fresh=False, save_scanned_data=False, save_ready=False):
@@ -286,7 +288,7 @@ class BasicSolver():
         
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
-        return self.check_scanned_drop(element, data=tmp_scanned_data, save_ready=save_ready)
+        return self.check_scanned_drop(element, data=tmp_scanned_data, save_scanned_data=save_scanned_data, save_ready=save_ready)
 
     def check_group_drop(self, element, fresh=False, save_scanned_data=False, save_ready=True):
         '''Check whether the element can be scanned in group form and dropped
@@ -312,51 +314,52 @@ class BasicSolver():
         idxes_need_to_solve = [idx for idx, i in enumerate(tmp_scanned_data) if i == '.']
         # print(idxes_need_to_solve)
         boxes = self.structure.box_idx_list
-        box_rows = []
-        box_cols = []
-        for box in boxes:
-            box_idxes_to_solve = list(set(box) & set(idxes_need_to_solve))
+        box_rows = {boxid : None for boxid in range(len(boxes))} # {boxid: rows in this box}
+        box_cols = {boxid : None for boxid in range(len(boxes))}
+        for boxid in range(len(boxes)):
+            box_idxes_to_solve = list(set(boxes[boxid]) & set(idxes_need_to_solve))
 
-            box_rows.append(set([int(idx / (self.meta_size**2)) for idx in box_idxes_to_solve]))
-            box_cols.append(set([idx % (self.meta_size**2) for idx in box_idxes_to_solve]))
+            box_rows[boxid] = set([int(idx / (self.meta_size**2)) for idx in box_idxes_to_solve])
+            box_cols[boxid] = set([idx % (self.meta_size**2) for idx in box_idxes_to_solve])
         # print('box_rows', box_rows)
         # print('box_cols', box_cols)
-        max_row_len = max([len(s) for s in box_rows])
-        max_col_len = max([len(c) for c in box_cols])
+        max_row_len = max([len(s) for s in box_rows.values()])
+        max_col_len = max([len(c) for c in box_cols.values()])
 
         # Row group
         for iter_num in range(2, max_row_len + 1): # FIXME: UNSOLVED, REWIRTE THIS PART, MAKE SURE THAT THE GROUP PART DO NOT BE DELETED 
-            combines = list(combinations(box_rows, iter_num))
+            combines_key = list(combinations(box_rows, iter_num))
             # print('combines:')
-            for combine in combines:
-                # print('combine:', combine)
-                if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    print('Found the group drop part is', combine, ' rows.')
-                    print(self.display(self.tmp_scanned_data[element]))
-                    rows = combine[0]
+            for combine_key in combines_key:
+                # print('combine:', combine_key)
+                if all(list(map(lambda x: box_rows[x] == box_rows[combine_key[0]], combine_key))) and len(box_rows[combine_key[0]]) == iter_num:
+                    # print('Found the group drop part in box ', combine_key, ' is ', box_rows[combine_key[0]], ' rows.')
+                    # print(self.display(self.tmp_scanned_data[element]))
+                    rows = box_rows[combine_key[0]]
                     for idx in idxes_need_to_solve:
-                        if int(idx / (self.meta_size**2)) in rows:
-                            # print('dropped', idx)
+                        if int(idx / (self.meta_size**2)) in rows and idx not in sum([boxes[boxid] for boxid in combine_key], []):
+                            print(sum([boxes[boxid] for boxid in combine_key], []))
+                            print('dropped', idx)
                             tmp_scanned_data[idx] = ''
         
         # Col group
         for iter_num in range(2, max_col_len + 1):
-            combines = list(combinations(box_cols, iter_num))
+            combines_key = list(combinations(box_cols, iter_num))
             # print('combines:')
-            for combine in combines:
-                # print('combine:', combine)
-                if all(list(map(lambda x: x == combine[0], combine))) and len(combine[0]) == iter_num:
-                    # print('Found the group drop part is', combine, ' cols.')
-                    cols = combine[0]
+            for combine_key in combines_key:
+                # print('combine_key:', combine_key)
+                if all(list(map(lambda x: box_cols[x] == box_cols[combine_key[0]], combine_key))) and len(box_cols[combine_key[0]]) == iter_num:
+                    # print('Found the group drop part in box ', combine_key, ' is', box_cols[combine_key[0]], ' cols.')
+                    cols = box_cols[combine_key[0]]
                     for idx in idxes_need_to_solve:
-                        if idx % (self.meta_size**2) in cols: 
+                        if idx % (self.meta_size**2) in cols and idx not in sum([boxes[boxid] for boxid in combine_key], []):
                             # print('dropped', idx)
                             tmp_scanned_data[idx] = '' # TODO: SOLVED, make every solver save their tmp_scanned_data
         
         # print(self.display(tmp_scanned_data))
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
-        return self.check_scanned_drop(element, data=tmp_scanned_data, save_ready=save_ready)
+        return self.check_scanned_drop(element, data=tmp_scanned_data, save_scanned_data=save_scanned_data, save_ready=save_ready)
 
     def check_square_drop(self, element, fresh=False, save_scanned_data=False, save_ready=True):
         '''Check whether the element can be scanned in square form and dropped
@@ -421,7 +424,7 @@ class BasicSolver():
         # print(self.display(tmp_scanned_data[element]))
         if save_scanned_data:
             self.tmp_scanned_data[element] = tmp_scanned_data
-        return self.check_scanned_drop(element, data=tmp_scanned_data, save_ready=save_ready)
+        return self.check_scanned_drop(element, data=tmp_scanned_data, save_scanned_data=save_scanned_data, save_ready=save_ready)
     
     def update(self):
         '''Update the self.data into a new state, clear the ready and record the steps.
@@ -458,11 +461,11 @@ class BasicSolver():
                 re[method] = self.scan_all(method, fresh=False, save_scanned_data=False, save_ready=True)
         # print(self.display())
         print('re step : ', re)
-        print('Before - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
+        # print('Before - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
         if any(list(re.values())):
             re_step = self.update()
-            print(self.display())
-            print('After - ready: ', self.ready)
+            # print(self.display())
+            print('After - ready: ', {chr(int(int(t[0])/(self.meta_size**2)) + ord('A'))+ str(int(t[0])%(self.meta_size**2) + 1) : t[1] for t in self.ready})
             return re_step
         else:
             return False
