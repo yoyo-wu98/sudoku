@@ -31,8 +31,9 @@ class BasicSolver():
     - check_area_drop
     - check_grouped_dropped
     - check_squared_dropped
-    # TODO: UNSOLVED, predict part
-    # FIXME: SOLVED, save_ready & save_scanned_data seperated
+    TODO: UNSOLVED, predict part
+    FIXME: SOLVED, save_ready & save_scanned_data seperated
+    TODO: UNSOLVED, OPTIMIZE THE BASIC SOLVER
     '''
     def __init__(self, problem_structure):
         assert problem_structure.__class__ == Structure, 'Parameter error: The problem_structure\'s class is not Structure.'
